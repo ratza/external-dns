@@ -18,6 +18,7 @@ package endpoint
 
 import (
 	"fmt"
+	"golang.org/x/exp/slices"
 	"net/netip"
 	"sort"
 	"strings"
@@ -147,6 +148,21 @@ func (t Targets) IsLess(o Targets) bool {
 		}
 	}
 	return false
+}
+
+// Contains returns true if every target in Targets argument is found (case-insensitive) in the receiver Targets
+func (t Targets) Contains(o Targets) bool {
+	for _, a := range o {
+		comparator := func(b string) bool {
+			return strings.EqualFold(a, b)
+		}
+
+		if slices.IndexFunc(t, comparator) < 0 {
+			return false
+		}
+	}
+
+	return true
 }
 
 // ProviderSpecificProperty holds the name and value of a configuration which is specific to individual DNS providers

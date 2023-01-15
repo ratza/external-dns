@@ -115,3 +115,47 @@ func TestIsLess(t *testing.T) {
 		}
 	}
 }
+
+func TestContains(t *testing.T) {
+	tests := []struct {
+		a Targets
+		b Targets
+		e bool
+	}{
+		{
+			[]string{"1.2.3.4"},
+			[]string{"4.3.2.1"},
+			false,
+		}, {
+			[]string{"1.2.3.4"},
+			[]string{"1.2.3.4", "4.3.2.1"},
+			false,
+		}, {
+			[]string{"1.2.3.4", "4.3.2.1"},
+			[]string{"1.2.3.4"},
+			true,
+		}, {
+			[]string{"1.2.3.4", "4.3.2.1"},
+			[]string{"8.8.8.8", "8.8.4.4"},
+			false,
+		}, {
+			[]string{"ExAmPlE.OrG"},
+			[]string{"example.org", "EXAMPLE.ORG"},
+			true,
+		}, {
+			[]string{"1.2.3.4", "4.3.2.1"},
+			[]string{"4.3.2.1", "1.2.3.4"},
+			true,
+		}, {
+			[]string{"1.2.3.4", "4.3.2.1"},
+			[]string{"1.2.3.4", "4.3.2.1"},
+			true,
+		},
+	}
+
+	for _, d := range tests {
+		if d.a.Contains(d.b) != d.e {
+			t.Errorf("%v contains %v is expected to be %v", d.a, d.b, d.e)
+		}
+	}
+}
