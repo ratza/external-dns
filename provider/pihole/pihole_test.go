@@ -111,7 +111,7 @@ func TestProvider(t *testing.T) {
 		t.Fatal(err)
 	}
 	if len(newRecords) != 3 {
-		t.Fatal("Expected list of 3 records, got:", records)
+		t.Fatal("Expected list of 3 records, got:", newRecords)
 	}
 
 	for idx, record := range records {
@@ -155,7 +155,7 @@ func TestProvider(t *testing.T) {
 		t.Fatal(err)
 	}
 	if len(newRecords) != 2 {
-		t.Fatal("Expected list of 2 records, got:", records)
+		t.Fatal("Expected list of 2 records, got:", newRecords)
 	}
 
 	for idx, record := range records {
@@ -184,12 +184,22 @@ func TestProvider(t *testing.T) {
 	if err := p.ApplyChanges(context.Background(), &plan.Changes{
 		UpdateOld: []*endpoint.Endpoint{
 			{
+				DNSName:    "test1.example.com",
+				Targets:    []string{"192.168.1.1"},
+				RecordType: endpoint.RecordTypeA,
+			},
+			{
 				DNSName:    "test2.example.com",
 				Targets:    []string{"192.168.1.2"},
 				RecordType: endpoint.RecordTypeA,
 			},
 		},
 		UpdateNew: []*endpoint.Endpoint{
+			{
+				DNSName:    "test1.example.com",
+				Targets:    []string{"10.0.0.1", "192.168.1.1"},
+				RecordType: endpoint.RecordTypeA,
+			},
 			{
 				DNSName:    "test2.example.com",
 				Targets:    []string{"10.0.0.1"},
@@ -206,7 +216,7 @@ func TestProvider(t *testing.T) {
 		t.Fatal(err)
 	}
 	if len(newRecords) != 2 {
-		t.Fatal("Expected list of 2 records, got:", records)
+		t.Fatal("Expected list of 2 records, got:", newRecords)
 	}
 
 	for idx, record := range records {

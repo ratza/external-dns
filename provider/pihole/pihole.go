@@ -74,13 +74,12 @@ func (p *PiholeProvider) Records(ctx context.Context) ([]*endpoint.Endpoint, err
 
 // ApplyChanges implements Provider, syncing desired state with the Pi-hole server Local DNS.
 func (p *PiholeProvider) ApplyChanges(ctx context.Context, changes *plan.Changes) error {
+	creates, deletes := updatesToCreates(changes)
+	changes.Delete = append(changes.Delete, deletes...)
+	changes.Create = append(changes.Create, creates...)
+
 	// Handle deletions first - there are no endpoints for updating in place.
 	for _, ep := range changes.Delete {
-		if err := p.api.deleteRecord(ctx, ep); err != nil {
-			return err
-		}
-	}
-	for _, ep := range changes.UpdateOld {
 		if err := p.api.deleteRecord(ctx, ep); err != nil {
 			return err
 		}
@@ -92,11 +91,20 @@ func (p *PiholeProvider) ApplyChanges(ctx context.Context, changes *plan.Changes
 			return err
 		}
 	}
-	for _, ep := range changes.UpdateNew {
-		if err := p.api.createRecord(ctx, ep); err != nil {
-			return err
+
+	return nil
+}
+
+func updatesToCreates(changes *plan.Changes) (creates []*endpoint.Endpoint, deletes []*endpoint.Endpoint) {
+	for i, old := range changes.UpdateOld {
+		updated := changes.UpdateNew[i]
+
+		if !updated.Targets.Contains(old.Targets) {
+			// recreate when desired targets do not contain full list of existing ones
+			deletes = append(deletes, old)
+			creates = append(creates, updated)
 		}
 	}
 
-	return nil
+	return creates, deletes
 }
